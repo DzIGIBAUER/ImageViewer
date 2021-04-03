@@ -4,24 +4,42 @@ from PyQt6 import QtCore
 from ImageViewerRepo.UI import mainWindowUI
 import sys
 
-img_path = r"C:\Users\Windows 10 Pro\Pictures\Saved Pictures\Capture.JPG"
+imgPath = r"C:\Users\Windows 10 Pro\Pictures\Saved Pictures\Capture.JPG"
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        QtCore.QDir.addSearchPath("icons", "Resources/icons")
 
-        QtCore.QDir.addSearchPath('icons', 'Resources/icons')
+        self.trenutniPixmap = None
+        self.zoomStep = 20
+        self.trenutniZoom = 0
 
-        self.setupUi()
+        self.ui = mainWindowUI.Ui_MainWindow()
+        self.ui.setupUi(self)
 
-    def setupUi(self):
+        self.ui.imageLabel.wheelEvent = self.namestiZoom
+
         self.setWindowIcon(QIcon("icons:mainIcon.ico"))
-
-        ui = mainWindowUI.Ui_MainWindow()
-        ui.setupUi(self)
-
-        # mora nakon setupUi
         self.setWindowTitle("Image Viewer aplikacija :D :D")
+
+        self.namestiSliku(imgPath)
+
+    def namestiZoom(self, event):
+
+        if event.angleDelta().y() > 0:
+            self.trenutniZoom += self.zoomStep
+        else:
+            self.trenutniZoom -= self.zoomStep
+
+        size = self.trenutniPixmap.size() + QtCore.QSize(self.trenutniZoom, self.trenutniZoom)
+
+        novaSlika = self.trenutniPixmap.scaled(size.width(), size.height(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        self.ui.imageLabel.setPixmap(novaSlika)
+
+    def namestiSliku(self, slika):
+        self.trenutniPixmap = QPixmap(slika)
+        self.ui.imageLabel.setPixmap(self.trenutniPixmap)
 
 
 if __name__ == '__main__':

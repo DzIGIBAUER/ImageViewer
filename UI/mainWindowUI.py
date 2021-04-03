@@ -18,10 +18,10 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.image = QtWidgets.QLabel(self.centralwidget)
-        self.image.setAlignment(QtCore.Qt.Alignment.AlignCenter)
-        self.image.setObjectName("image")
-        self.gridLayout_2.addWidget(self.image, 0, 0, 1, 1)
+        self.imageLabel = QtWidgets.QLabel(self.centralwidget)
+        self.imageLabel.setAlignment(QtCore.Qt.Alignment.AlignCenter)
+        self.imageLabel.setObjectName("imageLabel")
+        self.gridLayout_2.addWidget(self.imageLabel, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 599, 21))
@@ -37,7 +37,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.image.setText(_translate("MainWindow", "TextLabel"))
+        self.imageLabel.setText(_translate("MainWindow", "TextLabel"))
 
 
 if __name__ == "__main__":
