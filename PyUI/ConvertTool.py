@@ -12,13 +12,15 @@ def konvertuj(path):
         print(f"Konvertovan fajl {ime_fajla}")
         return
 
-    print(f"Doslo je do greske: {out}\n{err}")
-    if input("Nastavi dalje y/n") == 'n':
+    print(f"Doslo je do greske: {out.decode('utf-8')}\n{err.decode('utf-8')}")
+
+    if input("Nastavi dalje? y/any key: ") != 'y':
         exit(1)
 
-ui_folder = Path(r"..\UI")
+if __name__ == '__main__':
+    ui_folder = Path(r"..\UI")
 
-fajlovi = list(ui_folder.glob("*.ui"))
+    fajlovi = list(ui_folder.glob("*.ui"))
 
-for fajl_path in fajlovi:
-    konvertuj(fajl_path)
+    for fajl_path in fajlovi:
+        konvertuj(fajl_path)
