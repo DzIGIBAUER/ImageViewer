@@ -11,39 +11,94 @@ class MainWindow(QMainWindow):
         super().__init__()
         QtCore.QDir.addSearchPath("icons", "Resources/icons")
 
-        self.trenutniPixmap = None
-        self.zoomStep = 20
-        self.trenutniZoom = 0
+        # move promenljive
+        self.mousePocetnaPozicija = QtCore.QPointF()
+        self.imgPocetnaPozicija = QtCore.QPointF()
+
+        self.slika = Slika(imgPath)
+        self.setFixedSize(300, 300)
 
         self.ui = mainWindowUI.Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.ui.imageLabel.wheelEvent = self.namestiZoom
+        self.ui.imageLabel.wheelEvent = self.zoomEvent
+        self.ui.imageLabel.mousePressEvent = self.moveStart
+        self.ui.imageLabel.mouseMoveEvent = self.moveUpdate
+        self.ui.imageLabel.mouseReleaseEvent = self.moveEnd
 
         self.setWindowIcon(QIcon("icons:mainIcon.ico"))
         self.setWindowTitle("Image Viewer aplikacija :D :D")
 
-        self.namestiSliku(imgPath)
+        self.prikaziSliku(self.slika)
 
-    def namestiZoom(self, event):
+    def zoomEvent(self, event):
+        # angle > 0 je up, angle < 0 je down
+        angle = event.angleDelta().y()
+        scrollSmer = "up" if angle > 0 else "down"
+        novaSlika = self.slika.namestiZoom(scrollSmer)
 
-        if event.angleDelta().y() > 0:
-            self.trenutniZoom += self.zoomStep
-        else:
-            self.trenutniZoom -= self.zoomStep
+        self.ui.imageLabel.resize(novaSlika.size() + QtCore.QSize(10, 10))
+        print(f"Velicina nove slike je {novaSlika.size()}\n{self.ui.imageLabel.size()}")
 
-        size = self.trenutniPixmap.size() + QtCore.QSize(self.trenutniZoom, self.trenutniZoom)
+        self.prikaziSliku(novaSlika)
 
-        novaSlika = self.trenutniPixmap.scaled(size.width(), size.height(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-        self.ui.imageLabel.setPixmap(novaSlika)
-
-    def namestiSliku(self, slika):
-        self.trenutniPixmap = QPixmap(slika)
+    def prikaziSliku(self, slikaPixmap):
+        self.trenutniPixmap = QPixmap(slikaPixmap)
         self.ui.imageLabel.setPixmap(self.trenutniPixmap)
+
+    def moveStart(self, event):
+        self.mousePocetnaPozicija = event.globalPosition()
+        self.imgPocetnaPozicija = QtCore.QPointF(self.ui.imageLabel.pos())
+
+    def moveUpdate(self, event):
+        globalPos = event.globalPosition()
+        razlika = globalPos - self.mousePocetnaPozicija
+        novaPos = self.imgPocetnaPozicija + razlika
+        self.ui.imageLabel.move(novaPos.toPoint())
+
+
+    def moveEnd(self, _event):
+        self.mousePocetnaPozicija = QtCore.QPoint()
+
+class Slika(QPixmap):
+    def __init__(self, slika=None):
+        super().__init__(slika)
+
+        self.trenutniZoom = 0
+        self.zoomKorak = 20
+
+    def namestiZoom(self, scrollSmer):
+        # ili uvelicivamo ili smanjujemo sliku
+        if scrollSmer == "up":
+            noviZoom = self.trenutniZoom + self.zoomKorak
+        else:
+            noviZoom = self.trenutniZoom - self.zoomKorak
+
+        size = self.size() + QtCore.QSize(noviZoom, noviZoom)
+
+        self.trenutniZoom = noviZoom
+
+        return self.scaled(size.width(), size.height(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+
+    # Back up the reference to the exceptionhook
+    sys._excepthook = sys.excepthook
+
+
+    def my_exception_hook(exctype, value, traceback):
+        # Print the error and traceback
+        print(exctype, value, traceback)
+        # Call the normal Exception hook after
+        sys._excepthook(exctype, value, traceback)
+        sys.exit(1)
+
+
+    # Set the exception hook to our wrapping function
+    sys.excepthook = my_exception_hook
 
     mainWindow = MainWindow()
     mainWindow.show()

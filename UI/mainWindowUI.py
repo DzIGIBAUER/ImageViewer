@@ -15,8 +15,12 @@ class Ui_MainWindow(object):
         MainWindow.resize(599, 444)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
+        self.centralwidget.setStyleSheet("#imageLabel{\n"
+"    background-color: rgb(72, 72, 72);\n"
+"}")
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.centralwidget)
+        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.imageLabel = QtWidgets.QLabel(self.centralwidget)
         self.imageLabel.setAlignment(QtCore.Qt.Alignment.AlignCenter)
