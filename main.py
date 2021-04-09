@@ -6,6 +6,7 @@ import sys
 
 imgPath = r"C:\Users\Windows 10 Pro\Pictures\Saved Pictures\Capture.JPG"
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -16,20 +17,26 @@ class MainWindow(QMainWindow):
         self.imgPocetnaPozicija = QtCore.QPointF()
 
         self.slika = Slika(imgPath)
-        self.setFixedSize(300, 300)
 
         self.ui = mainWindowUI.Ui_MainWindow()
         self.ui.setupUi(self)
 
+
+        # ne valja sranje, SRANJEE
         self.ui.imageLabel.wheelEvent = self.zoomEvent
         self.ui.imageLabel.mousePressEvent = self.moveStart
         self.ui.imageLabel.mouseMoveEvent = self.moveUpdate
         self.ui.imageLabel.mouseReleaseEvent = self.moveEnd
 
+        self.sideBar = self.ui.sideBar
+        self.sideBar.osposobi()
+        self.ui.expandButton.clicked.connect(self.sideBar.toggleSideBar)
+
         self.setWindowIcon(QIcon("icons:mainIcon.ico"))
         self.setWindowTitle("Image Viewer aplikacija :D :D")
 
         self.prikaziSliku(self.slika)
+
 
     def zoomEvent(self, event):
         # angle > 0 je up, angle < 0 je down
