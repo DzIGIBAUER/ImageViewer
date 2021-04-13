@@ -4,7 +4,6 @@ from sys import exit
 
 def konvertuj(path):
     imeFajla = path.stem
-
     cmd = ("pyuic6", "-x", str(path), "-o", fr"{uiFolder}\{imeFajla}UI.py")
 
     proces = Popen(cmd, stdout=PIPE, stderr=PIPE)

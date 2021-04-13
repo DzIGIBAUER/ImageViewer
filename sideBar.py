@@ -1,46 +1,37 @@
-from PyQt6.QtWidgets import QFrame
-from PyQt6.QtCore import QPropertyAnimation, QSize
-from time import clock
+from PyQt6.QtWidgets import QFrame, QPushButton, QSizePolicy
+from PyQt6.QtCore import QPropertyAnimation, QSize, QEasingCurve
+from ImageViewerRepo.sideBarButton import SideBarButton
 
 class SideBar(QFrame):
     def __init__(self, *args, **kwargs):
         super(SideBar, self).__init__(*args, **kwargs)
         self.expanded = False
-        self.kolonaWidth = None
-        self.kolone = []
-
-        self.animTrajanje = 250
-        self.sideBarAnim = None
-
-    '''
-    Ova klasa je ucitana u konvertovanom .py fajlu  u setupUi metodi
-    pre nego sto su ucitani svi elementi koji su nam potrebni.
-    Zato iz main.py nakon zavrsene setupUi metode naknadno zovemo ovu metodu da
-    napravimo listu elemenata u sideBaru kako bi manipulisali njima.
-    '''
-    def osposobi(self):
-        self.kolonaWidth = self.property("prvaKolona")
-
-        hc = self.findChild(QFrame, "hContainer")
-        self.kolone = [kolona for kolona in hc.children() if type(kolona) == QFrame]
-
-        self.sideBarAnim = QPropertyAnimation(self.kolone[0], b"minimumSize")
-        self.sideBarAnim.setDuration(self.animTrajanje)
+        self.dugmad = []
+        self.shrinkedWidth = 0
+        self.animacija = QPropertyAnimation(self, b"maximumWidth")
 
     def toggleSideBar(self):
-        pocetnaVrednost = self.kolone[0].minimumSize()
         if self.expanded:
-            krajnjaVrednost = QSize(0, 0)
+            pValue = self.maximumWidth()
+            eValue = self.shrinkedWidth
             self.expanded = False
-
         else:
-            krajnjaVrednost = self.kolonaWidth
+            pValue = self.maximumWidth()
+            eValue = 100
             self.expanded = True
 
-        self.sideBarAnim.setStartValue(pocetnaVrednost)
-        self.sideBarAnim.setEndValue(krajnjaVrednost)
-        self.sideBarAnim.start()
+        self.animacija.setStartValue(pValue)
+        self.animacija.setEndValue(eValue)
+        self.animacija.start()
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        # print(event)
+    def dodajDugme(self, icon, text, callback):
+        dugme = SideBarButton(icon, text)
+        self.layout().insertWidget(len(self.children()) - 1, dugme)
+        self.dugmad.append(dugme)
+        dugme.clicked.connect(callback)
+
+        self.shrinkedWidth = dugme.minimumWidth()
+        self.setMaximumWidth(self.shrinkedWidth)
+
+    def izbrisiDugme(self, dugme_id):
+        self.dugmad.remove(dugme_id)

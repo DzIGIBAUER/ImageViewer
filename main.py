@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6 import QtCore
 from ImageViewerRepo.UI import mainWindowUI
+from ImageViewerRepo.sideBarButton import SideBarButton
 import sys
 
 imgPath = r"C:\Users\Windows 10 Pro\Pictures\Saved Pictures\Capture.JPG"
@@ -21,16 +22,15 @@ class MainWindow(QMainWindow):
         self.ui = mainWindowUI.Ui_MainWindow()
         self.ui.setupUi(self)
 
+        expandCall = self.ui.sideBar.toggleSideBar
+        self.ui.sideBar.dodajDugme(QIcon("icons:home.png"), "Nesto", expandCall)
+
 
         # ne valja sranje, SRANJEE
         self.ui.imageLabel.wheelEvent = self.zoomEvent
         self.ui.imageLabel.mousePressEvent = self.moveStart
         self.ui.imageLabel.mouseMoveEvent = self.moveUpdate
         self.ui.imageLabel.mouseReleaseEvent = self.moveEnd
-
-        self.sideBar = self.ui.sideBar
-        self.sideBar.osposobi()
-        self.ui.expandButton.clicked.connect(self.sideBar.toggleSideBar)
 
         self.setWindowIcon(QIcon("icons:mainIcon.ico"))
         self.setWindowTitle("Image Viewer aplikacija :D :D")
@@ -86,6 +86,7 @@ class Slika(QPixmap):
         self.trenutniZoom = noviZoom
 
         return self.scaled(size.width(), size.height(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+    # transformMode = Qt.SmoothTransformation
 
 
 
