@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QFrame, QPushButton, QSizePolicy
-from PyQt6.QtCore import QPropertyAnimation, QSize, QEasingCurve
+from PyQt6.QtWidgets import QFrame
+from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
 from ImageViewerRepo.sideBarButton import SideBarButton
 
 class SideBar(QFrame):
@@ -9,14 +9,19 @@ class SideBar(QFrame):
         self.dugmad = []
         self.shrinkedWidth = 0
         self.animacija = QPropertyAnimation(self, b"maximumWidth")
+        self.animacija.setEasingCurve(QEasingCurve(QEasingCurve.Type.InQuad))
 
     def toggleSideBar(self):
-        if self.expanded:
+        if self.animacija.state() == QPropertyAnimation.State.Running:
+            pValue = self.animacija.currentValue()
+            self.animacija.stop()
+        else:
             pValue = self.maximumWidth()
+
+        if self.expanded:
             eValue = self.shrinkedWidth
             self.expanded = False
         else:
-            pValue = self.maximumWidth()
             eValue = 100
             self.expanded = True
 

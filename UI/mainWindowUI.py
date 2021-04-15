@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(652, 498)
+        MainWindow.resize(652, 469)
         self.centralWidget = QtWidgets.QWidget(MainWindow)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -36,14 +36,13 @@ class Ui_MainWindow(object):
         self.sideBar.setMinimumSize(QtCore.QSize(0, 0))
         self.sideBar.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.sideBar.setStyleSheet("#sideBar{\n"
-"    background-color: rgb(13, 200, 0);\n"
+"    background-color: rgb(49, 203, 0);\n"
 "}\n"
 "\n"
 "QPushButton{\n"
 "    border: 1px solid orange;\n"
 "    border-radius: 2px;\n"
-"    padding: 5px 0 5px 0;\n"
-"    background-color: rgb(118, 118, 118);\n"
+"    background-color: rgb(35, 152, 0);\n"
 "}")
         self.sideBar.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         self.sideBar.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
@@ -56,20 +55,21 @@ class Ui_MainWindow(object):
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
         self.horizontalLayout.addWidget(self.sideBar)
-        self.imageContainer = QtWidgets.QFrame(self.centralWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.imageContainer.sizePolicy().hasHeightForWidth())
-        self.imageContainer.setSizePolicy(sizePolicy)
-        self.imageContainer.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
-        self.imageContainer.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
-        self.imageContainer.setObjectName("imageContainer")
-        self.imageLabel = QtWidgets.QLabel(self.imageContainer)
-        self.imageLabel.setGeometry(QtCore.QRect(10, 10, 47, 13))
-        self.imageLabel.setText("")
-        self.imageLabel.setObjectName("imageLabel")
-        self.horizontalLayout.addWidget(self.imageContainer)
+        self.tabWidget = QtWidgets.QTabWidget(self.centralWidget)
+        self.tabWidget.setStyleSheet("QTabWidget::pane{\n"
+"    border-top: 2px solid #C2C7CB;\n"
+"}\n"
+"QTabBar::tab{\n"
+"    border: 1px solid red;\n"
+"    padding: 5px;\n"
+"    background-color: rgb(51, 167, 255);\n"
+"    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(49, 203, 0, 255), stop:1                     rgba(34, 135, 0, 255));\n"
+"}\n"
+"QTabBar::tab:selected{\n"
+"    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(51, 124, 160, 255), stop:1 rgba(34, 135, 0, 255));\n"
+"}")
+        self.tabWidget.setObjectName("tabWidget")
+        self.horizontalLayout.addWidget(self.tabWidget)
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar_2 = QtWidgets.QMenuBar(MainWindow)
         self.menuBar_2.setGeometry(QtCore.QRect(0, 0, 652, 21))
@@ -88,6 +88,7 @@ class Ui_MainWindow(object):
         self.menuBar_2.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(MainWindow)
+        self.tabWidget.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

@@ -1,72 +1,58 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6.QtGui import QPixmap, QIcon
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QWidget
+from PyQt6.QtGui import QPixmap, QIcon, QFontDatabase, QImageReader
 from PyQt6 import QtCore
-from ImageViewerRepo.UI import mainWindowUI
-from ImageViewerRepo.sideBarButton import SideBarButton
+from ImageViewerRepo.UI import mainWindowUI, imageControlsUI
+from pathlib import Path
 import sys
 
 imgPath = r"C:\Users\Windows 10 Pro\Pictures\Saved Pictures\Capture.JPG"
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         QtCore.QDir.addSearchPath("icons", "Resources/icons")
+        QtCore.QDir.addSearchPath("fonts", "Resources/fonts")
 
-        # move promenljive
-        self.mousePocetnaPozicija = QtCore.QPointF()
-        self.imgPocetnaPozicija = QtCore.QPointF()
-
-        self.slika = Slika(imgPath)
+        QFontDatabase.addApplicationFont("fonts:roboto/Roboto-Medium.ttf")
+        self.setStyleSheet("font: Roboto Medium; font-size: 12px;")
 
         self.ui = mainWindowUI.Ui_MainWindow()
         self.ui.setupUi(self)
 
         expandCall = self.ui.sideBar.toggleSideBar
         self.ui.sideBar.dodajDugme(QIcon("icons:home.png"), "Nesto", expandCall)
+        self.ui.sideBar.dodajDugme(QIcon("icons:mainicon.ico"), "IDEEEEEO", expandCall)
+        self.ui.sideBar.dodajDugme(QIcon("icons:exit.png"), "Napusti", expandCall)
 
+        # self.ui.tabWidget.tabBar().setTabButton(0, QTabBar.ButtonPosition.RightSide, QPushButton("a"))
 
-        # ne valja sranje, SRANJEE
-        self.ui.imageLabel.wheelEvent = self.zoomEvent
-        self.ui.imageLabel.mousePressEvent = self.moveStart
-        self.ui.imageLabel.mouseMoveEvent = self.moveUpdate
-        self.ui.imageLabel.mouseReleaseEvent = self.moveEnd
+        self.ui.actionOpen.triggered.connect(self.otvoriFajl)
 
         self.setWindowIcon(QIcon("icons:mainIcon.ico"))
         self.setWindowTitle("Image Viewer aplikacija :D :D")
 
-        self.prikaziSliku(self.slika)
+        self.formati = []
+        for f in QImageReader.supportedImageFormats():
+            self.formati.append(f.data().decode("utf-8"))
 
+    def otvoriFajl(self):
+        formatFilter = "".join([f"*.{_format} " for _format in self.formati])
+        filePaths, formati = QFileDialog.getOpenFileNames(caption="Izaberite fajlove", filter=formatFilter)
+        if not filePaths:
+            print("Nije izabran fajl")
+            return
 
-    def zoomEvent(self, event):
-        # angle > 0 je up, angle < 0 je down
-        angle = event.angleDelta().y()
-        scrollSmer = "up" if angle > 0 else "down"
-        novaSlika = self.slika.namestiZoom(scrollSmer)
+        for filePath in filePaths:
+            fp = Path(filePath)
+            imageControls = QWidget()
 
-        self.ui.imageLabel.resize(novaSlika.size() + QtCore.QSize(10, 10))
-        print(f"Velicina nove slike je {novaSlika.size()}\n{self.ui.imageLabel.size()}")
+            imgCUi = imageControlsUI.Ui_imageControls()
+            imgCUi.setupUi(imageControls)
+            imgCUi.label.setPixmap(QPixmap(filePath))
 
-        self.prikaziSliku(novaSlika)
+            self.ui.tabWidget.insertTab(0, imageControls, fp.name)
 
-    def prikaziSliku(self, slikaPixmap):
-        self.trenutniPixmap = QPixmap(slikaPixmap)
-        self.ui.imageLabel.setPixmap(self.trenutniPixmap)
-
-    def moveStart(self, event):
-        self.mousePocetnaPozicija = event.globalPosition()
-        self.imgPocetnaPozicija = QtCore.QPointF(self.ui.imageLabel.pos())
-
-    def moveUpdate(self, event):
-        globalPos = event.globalPosition()
-        razlika = globalPos - self.mousePocetnaPozicija
-        novaPos = self.imgPocetnaPozicija + razlika
-        self.ui.imageLabel.move(novaPos.toPoint())
-
-
-    def moveEnd(self, _event):
-        self.mousePocetnaPozicija = QtCore.QPoint()
-
+# stae ovo bee
 class Slika(QPixmap):
     def __init__(self, slika=None):
         super().__init__(slika)

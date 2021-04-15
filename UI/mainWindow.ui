@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>652</width>
-    <height>498</height>
+    <height>469</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,14 +67,13 @@
       </property>
       <property name="styleSheet">
        <string notr="true">#sideBar{
-	background-color: rgb(13, 200, 0);
+	background-color: rgb(49, 203, 0);
 }
 
 QPushButton{
 	border: 1px solid orange;
 	border-radius: 2px;
-	padding: 5px 0 5px 0;
-	background-color: rgb(118, 118, 118);
+	background-color: rgb(35, 152, 0);
 }</string>
       </property>
       <property name="frameShape">
@@ -119,32 +118,24 @@ QPushButton{
      </widget>
     </item>
     <item>
-     <widget class="QFrame" name="imageContainer">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="styleSheet">
+       <string notr="true">QTabWidget::pane{
+	border-top: 2px solid #C2C7CB;
+}
+QTabBar::tab{
+	border: 1px solid red;
+	padding: 5px;
+	background-color: rgb(51, 167, 255);
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(49, 203, 0, 255), stop:1 					rgba(34, 135, 0, 255));
+}
+QTabBar::tab:selected{
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(51, 124, 160, 255), stop:1 rgba(34, 135, 0, 255));
+}</string>
       </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
+      <property name="currentIndex">
+       <number>-1</number>
       </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <widget class="QLabel" name="imageLabel">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>47</width>
-         <height>13</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
      </widget>
     </item>
    </layout>
