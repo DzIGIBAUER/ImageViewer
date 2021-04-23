@@ -1,10 +1,11 @@
 from PyQt6.QtWidgets import QFrame
 from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
-from ImageViewerRepo.sideBarButton import SideBarButton
+from ImageViewerRepo.CustomWidgets.sideBarButton import SideBarButton
 
 class SideBar(QFrame):
     def __init__(self, *args, **kwargs):
-        super(SideBar, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+
         self.expanded = False
         self.dugmad = []
         self.shrinkedWidth = 0

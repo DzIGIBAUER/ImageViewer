@@ -118,7 +118,7 @@ QPushButton{
      </widget>
     </item>
     <item>
-     <widget class="QTabWidget" name="tabWidget">
+     <widget class="MainContent" name="tabWidget">
       <property name="styleSheet">
        <string notr="true">QTabWidget::pane{
 	border-top: 2px solid #C2C7CB;
@@ -178,7 +178,13 @@ QTabBar::tab:selected{
   <customwidget>
    <class>SideBar</class>
    <extends>QFrame</extends>
-   <header>..sideBar</header>
+   <header>ImageViewerRepo.CustomWidgets.sideBar</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MainContent</class>
+   <extends>QTabWidget</extends>
+   <header>ImageViewerRepo.CustomWidgets.mainContent</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

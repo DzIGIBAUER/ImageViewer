@@ -55,7 +55,7 @@ class Ui_MainWindow(object):
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
         self.horizontalLayout.addWidget(self.sideBar)
-        self.tabWidget = QtWidgets.QTabWidget(self.centralWidget)
+        self.tabWidget = MainContent(self.centralWidget)
         self.tabWidget.setStyleSheet("QTabWidget::pane{\n"
 "    border-top: 2px solid #C2C7CB;\n"
 "}\n"
@@ -98,7 +98,8 @@ class Ui_MainWindow(object):
         self.actionnest.setText(_translate("MainWindow", "nest"))
         self.actionOpen.setText(_translate("MainWindow", "Open"))
         self.actionSave.setText(_translate("MainWindow", "Save"))
-from ..sideBar import SideBar
+from ImageViewerRepo.CustomWidgets.mainContent import MainContent
+from ImageViewerRepo.CustomWidgets.sideBar import SideBar
 
 
 if __name__ == "__main__":

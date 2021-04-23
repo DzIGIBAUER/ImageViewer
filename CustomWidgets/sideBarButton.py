@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QPushButton, QSizePolicy
-from PyQt6.QtGui import QPixmap, QPainter, QIcon, QColor, QPalette
-from PyQt6.QtCore import Qt, QRect, QSize, QVariantAnimation
+from PyQt6.QtGui import QPainter, QIcon, QColor, QPalette
+from PyQt6.QtCore import QRect, QSize, QVariantAnimation
 
 class SideBarButton(QPushButton):
     def __init__(self, *args, **kwargs):
@@ -22,7 +22,7 @@ class SideBarButton(QPushButton):
         self.setStyleSheet(f"padding: 3px 5px 3px {self.iconRect.width()}px;")
 
         self.backgroundColor = None  # bice namesteno kada se widget ucita: QColor
-        self.hoverColor = QColor("lightgreen")
+        self.hoverColor = QColor("darkblue")
 
         self.hoverAnimacija = QVariantAnimation()
         self.hoverAnimacija.valueChanged.connect(self.setBojaDugmeta)
@@ -30,7 +30,7 @@ class SideBarButton(QPushButton):
 
 
     def setBojaDugmeta(self, color):
-        self.setStyleSheet(f"{self.styleSheet()}background-color: {color.name()};")
+        self.namestiStyleSheetSvojstvo("background-color", color.name())
 
     def getBojaDugmeta(self):
         return QColor(self.palette().color(QPalette.ColorRole.Button).name())
@@ -99,23 +99,25 @@ class SideBarButton(QPushButton):
     def setIcon(self, icon):
         self.ikonica = icon
 
+    def namestiStyleSheetSvojstvo(self, svojstvo, vrednost):
+        # TODO: ovde bi valjao regex, ali zasada ovako
+        stariStyleSheet = self.styleSheet()
+        pv = f"{svojstvo}: {vrednost};"
+
+        startIdx = stariStyleSheet.find(f"{svojstvo}:")
+        if startIdx == -1:
+            self.setStyleSheet(stariStyleSheet + pv)
+            return
+
+        endIdx = stariStyleSheet.find(";", startIdx)
+
+        # spojimo stari stylesheet za zamenjenom starom vrednoscu svojstva i namestamo..
+        self.setStyleSheet("".join((stariStyleSheet[:startIdx], pv, stariStyleSheet[endIdx + 1:])))
+
     def setVidljivostTexta(self, opacity):
         if opacity > 1:  # ne moze da bude vece od 1 ili manje od 0
             opacity = 1
         elif opacity < 0:
             opacity = 0
 
-        # TODO: ovde bi valjao regex, ali zasada ovako
-        stariStyleSheet = self.styleSheet()
-        vidljivost = f"color: rgba(0, 0, 0, {opacity});"  # ovo treba da dodamo
-
-        idx = stariStyleSheet.find("color:")  # mozda je vec tu stara vrednost
-        if idx == -1:  # -1 znaci da nije i samo dodamo pored
-            self.setStyleSheet(stariStyleSheet + vidljivost)
-            return
-
-        startIdx = stariStyleSheet.find("color:")
-        endIdx = stariStyleSheet.find(";", startIdx)
-
-        # spojimo stari stylesheet za zamenjenom starom color vrednoscu i namestamo..
-        self.setStyleSheet("".join((stariStyleSheet[:startIdx], vidljivost, stariStyleSheet[endIdx + 1:])))
+        self.namestiStyleSheetSvojstvo("color", f"rgba(0, 0, 0, {opacity})")
