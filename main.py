@@ -23,7 +23,6 @@ class MainWindow(QMainWindow):
         sb = self.ui.sideBar
         sb.dodajDugme(QIcon("icons:mainIcon.ico"), "EJ", sb.toggleSideBar)
 
-
         self.ui.actionOpen.triggered.connect(self.otvoriFajl)
 
         self.setWindowIcon(QIcon("icons:mainIcon.ico"))
@@ -43,7 +42,7 @@ class MainWindow(QMainWindow):
 
         for filePath in filePaths:
             fp = Path(filePath)
-            imgControls = imageControls.ImageControls(filePath)
+            imgControls = imageControls.ImageControls(self, filePath)
             self.ui.tabWidget.insertTab(0, imgControls, fp.name)
             self.ui.tabWidget.setCurrentIndex(0)
 

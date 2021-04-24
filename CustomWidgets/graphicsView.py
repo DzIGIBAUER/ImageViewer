@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
-from PyQt6.QtGui import QResizeEvent, QPaintEvent, QMouseEvent, QPixmap, QColor, QPen, QBrush, QImage, QPainter
+from PyQt6.QtGui import (QResizeEvent, QPaintEvent, QMouseEvent, QWheelEvent, QPixmap, QColor, QPen, QBrush, QImage,
+                         QPainter)
 from PyQt6.QtCore import Qt, QRectF, QPointF, pyqtSignal
 from ImageViewerRepo.CustomWidgets.drawing import Drawing
 
@@ -15,6 +16,8 @@ class GraphicsView(QGraphicsView):
         self.setScene(self.scene_)
 
         self.drawing = Drawing(self)
+        self.zoomLevel = 1.0
+        self.zoomKorak = 0.1
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -32,6 +35,16 @@ class GraphicsView(QGraphicsView):
         super().mouseReleaseEvent(event)
         if event.button() == Qt.MouseButtons.LeftButton:
             self.drawing.zavrsi()
+
+    def wheelEvent(self, event: QWheelEvent):
+        super().wheelEvent(event)
+        if event.angleDelta().y() > 0:
+            nz = self.zoomLevel + self.zoomKorak
+        else:
+            nz = self.zoomLevel - self.zoomKorak
+
+        self.scale(nz, nz)
+        self.resizeEvent(QResizeEvent(self.size(), self.size()))
 
     def sacuvaj(self):
         r = self.pixmapItem.pixmap().rect()
