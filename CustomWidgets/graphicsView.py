@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
 from PyQt6.QtGui import (QResizeEvent, QPaintEvent, QMouseEvent, QWheelEvent, QPixmap, QColor, QPen, QBrush, QImage,
                          QPainter)
-from PyQt6.QtCore import Qt, QRectF, QPointF, pyqtSignal
+from PyQt6.QtCore import Qt, QRectF, QPointF, QPoint, pyqtSignal
 from ImageViewerRepo.CustomWidgets.drawing import Drawing
 
 class GraphicsView(QGraphicsView):
@@ -19,6 +19,8 @@ class GraphicsView(QGraphicsView):
         self.zoomLevel = 1.0
         self.zoomKorak = 0.1
 
+        self.panPoint = None
+
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
@@ -26,15 +28,20 @@ class GraphicsView(QGraphicsView):
         super().mousePressEvent(event)
         if event.button() == Qt.MouseButtons.LeftButton:
             self.drawing.pokreni(event)
+        elif event.button() == Qt.MouseButtons.MiddleButton:
+            self.panPoint = event.position()
 
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         self.drawing.nastavi(event)
+        self.panView(event)
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
         if event.button() == Qt.MouseButtons.LeftButton:
             self.drawing.zavrsi()
+        elif event.button() == Qt.MouseButtons.MiddleButton:
+            self.panPoint = None
 
     def wheelEvent(self, event: QWheelEvent):
         super().wheelEvent(event)
@@ -46,13 +53,23 @@ class GraphicsView(QGraphicsView):
         self.scale(nz, nz)
         self.resizeEvent(QResizeEvent(self.size(), self.size()))
 
-    def sacuvaj(self):
+    def panView(self, event: QMouseEvent):
+        if not self.panPoint:
+            return
+
+        razlika = self.panPoint - event.position()
+        cRect = self.scene_.sceneRect()
+        nRect = QRectF(cRect.x() + razlika.x(), cRect.y() + razlika.y(), cRect.width(), cRect.height())
+        self.scene_.setSceneRect(nRect)
+        self.panPoint = event.position()
+
+    def sacuvajFajl(self, fileName):
         r = self.pixmapItem.pixmap().rect()
         img = QImage(r.size(), QImage.Format.Format_A2BGR30_Premultiplied)
         p = QPainter(img)
         self.scene_.render(p, QRectF(img.rect()), QRectF(r))
         p.end()
-        img.save("resi.png")
+        img.save(fileName)
 
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)

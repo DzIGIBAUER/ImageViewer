@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QGraphicsItem
+from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QGraphicsItem, QFileDialog
 from PyQt6.QtGui import QIcon, QPainter, QPixmap
 from PyQt6.QtCore import pyqtSignal, QRectF, QPropertyAnimation, QParallelAnimationGroup
 from ImageViewerRepo.UI.imageControlsUI import Ui_imageControls
@@ -6,7 +6,6 @@ from ImageViewerRepo.UI.imageControlsUI import Ui_imageControls
 class ImageControls(QWidget):
     def __init__(self, main, image, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        main.ui.sideBar.dodajDugme(QIcon("icons:exit.png"), "Edit", self.toogleEdit)
         self.ui = Ui_imageControls()
         self.ui.setupUi(self)
         self.drawing = self.ui.graphicsView.drawing
@@ -44,6 +43,10 @@ class ImageControls(QWidget):
             self.editMode = True
 
         self.animGroup.start()
+
+    def sacuvaj(self):
+        fileName, _fileType = QFileDialog.getSaveFileName(caption="Sacuvaj fajl")
+        self.ui.graphicsView.sacuvajFajl(fileName)
 
     def dodajMetoduCrtanja(self, icon, drawingMethod):
         btn = QPushButton(icon, "")

@@ -22,8 +22,10 @@ class MainWindow(QMainWindow):
 
         sb = self.ui.sideBar
         sb.dodajDugme(QIcon("icons:mainIcon.ico"), "EJ", sb.toggleSideBar)
+        sb.dodajDugme(QIcon("icons:exit.png"), "Edit", self.toggleEditing)
 
         self.ui.actionOpen.triggered.connect(self.otvoriFajl)
+        self.ui.actionSave.triggered.connect(self.sacuvaj)
 
         self.setWindowIcon(QIcon("icons:mainIcon.ico"))
         self.setWindowTitle("Image Viewer aplikacija :D :D")
@@ -45,6 +47,19 @@ class MainWindow(QMainWindow):
             imgControls = imageControls.ImageControls(self, filePath)
             self.ui.tabWidget.insertTab(0, imgControls, fp.name)
             self.ui.tabWidget.setCurrentIndex(0)
+
+    def toggleEditing(self):
+        if not self.ui.tabWidget.tabBar().count():
+            return
+
+        imgControl = self.ui.tabWidget.currentWidget()
+        imgControl.toogleEdit()
+
+    def sacuvaj(self):
+        if not self.ui.tabWidget.tabBar().count():
+            return
+        imgControl = self.ui.tabWidget.currentWidget()
+        imgControl.sacuvaj()
 
 
 if __name__ == '__main__':
