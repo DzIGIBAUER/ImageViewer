@@ -12,6 +12,7 @@ class GraphicsView(QGraphicsView):
         self.pixmap = QPixmap()
 
         self.scene_ = QGraphicsScene()
+        self.scene_.setBackgroundBrush(QBrush(QColor("white")))
         self.previewScene = QGraphicsScene()  # scena za renderovanje itema koji su onda prikazani sa desne strane
         self.setScene(self.scene_)
 
@@ -63,13 +64,33 @@ class GraphicsView(QGraphicsView):
         self.scene_.setSceneRect(nRect)
         self.panPoint = event.position()
 
-    def sacuvajFajl(self, fileName):
-        r = self.pixmapItem.pixmap().rect()
+    def renderScene(self, nacin):
+        if nacin == 1:
+            r = self.pixmapItem.pixmap().rect()
+        elif nacin == 2:
+            r = self.scene_.itemsBoundingRect().toRect()
+        else:
+            print("sta bre")
+            return
+
+        pix = QPixmap(r.size())
+        p = QPainter(pix)
+        self.scene_.render(p, QRectF(pix.rect()), QRectF(r))
+        return pix
+
+    def sacuvajFajl(self, fileName, nacin):
+        if nacin == 1:
+            r = self.pixmapItem.pixmap().rect()
+        elif nacin == 2:
+            r = self.scene_.itemsBoundingRect().toRect()
+        else:
+            print("sta bre")
+            return
         img = QImage(r.size(), QImage.Format.Format_A2BGR30_Premultiplied)
         p = QPainter(img)
         self.scene_.render(p, QRectF(img.rect()), QRectF(r))
         p.end()
-        img.save(fileName)
+        img.save(f"{fileName}.png")
 
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)

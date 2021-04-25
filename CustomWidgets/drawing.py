@@ -1,35 +1,58 @@
-from PyQt6.QtWidgets import QPushButton, QGraphicsScene, QGraphicsItemGroup, QGraphicsEllipseItem, QColorDialog, QLabel
-from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPixmap, QPainterPath
-from PyQt6.QtCore import pyqtSignal, Qt, QPointF
+from PyQt6.QtWidgets import (QPushButton, QGraphicsScene, QGraphicsItemGroup, QGraphicsItem, QGraphicsEllipseItem,
+                             QColorDialog, QLabel, QGraphicsLineItem)
+from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPaintEvent, QPixmap, QPainterPath
+from PyQt6.QtCore import pyqtSignal, Qt, QPointF, QRectF
+
 
 class ItemPreview(QLabel):
     itemUpdated = pyqtSignal(QPixmap)
 
-    def __init__(self, glavnaScena, item, *args, **kwargs):
+    def __init__(self, item, glavnaScena, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.resize(50, 50)
         self.item = item
         self.glavnaScena: QGraphicsScene = glavnaScena
+        self.glavnaScena.selectionChanged.connect(self.promenjenaSelekcija)
 
     def updatePreview(self, pixmap):
-        scaledPixmap = pixmap.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio)
-        self.setPixmap(scaledPixmap)
+        self.setPixmap(pixmap)
+
+    def promenjenaSelekcija(self):
+        self.repaint()
+
+    def paintEvent(self, event: QPaintEvent):
+        super().paintEvent(event)
+        print(self.item.isSelected())
+        if self.item.isSelected():
+            p = QPainter(self)
+            sz = self.size()
+            p.setPen(QColor("aqua"))
+            p.drawRect(0, 0, sz.width() - 1, sz.height() - 1)
 
     def mousePressEvent(self, event: QMouseEvent):
-        rect = self.item.boundingRect()
-        path = QPainterPath(QPointF(rect.x(), rect.y()))
-        path.addRect(1, 1, 1, 1)
-        self.glavnaScena.setSelectionArea(path)
+        if self.item.isSelected():
+            self.item.setSelected(False)
+        else:
+            self.item.setSelected(True)
+            print(self.item.isSelected())
+
 
 # ovu klasu inherituje svaki drawingMethod
 class Item:
     def __init__(self, glavnaScena):
         self.debljinaLinije, self.pen, self.brush = None, None, None
         self.group = Group()
+        # ne korisimo previewScene trenutno, pogledaj ispod
         self.previewScene = QGraphicsScene()
-        self.previewScene.setBackgroundBrush(QBrush(QColor("white")))
-        self.previewItem = ItemPreview(glavnaScena, self.group)
+        # self.previewScene.setBackgroundBrush(QBrush(QColor("white")))
+        self.previewItem = ItemPreview(self.group, glavnaScena)
 
+    def end(self):
+        self.previewScene.addItem(self.group)
+        self.previewItem.updatePreview(self.itemPreview())
+        return self.group
+
+    # FIXME: slike su nikakve nmp sto, dok se ne popravi redefinisi ovu metodu
     def itemPreview(self):
         pv = self.previewItem.size()
         pix = QPixmap(pv.width(), pv.height())
@@ -37,13 +60,49 @@ class Item:
         self.previewScene.render(p, self.previewScene.sceneRect())
         return pix
 
+
 class Drawing:
     # ove klase su drawingMethod
-    class Point(Item):
-        def __init__(self, scena):
-            super().__init__(scena)
+    class Line(Item):
+        def start(self, pos, debljinaLinije, pen, brush):
+            self.debljinaLinije = debljinaLinije
+            self.pen = pen
+            self.brush = brush
+            self.konstruisiLiniju(pos)
+            return self.group
 
+        def continue_(self, pos):
+            self.namestiKranjuTacku(pos)
+
+        def konstruisiLiniju(self, pos):
+            for i in range(self.debljinaLinije):
+                x, y = pos.x(), pos.y()
+                item = QGraphicsLineItem(x, y + i, x + 1, y + 1)
+                item.setPen(self.pen)
+                self.group.addToGroup(item)
+
+        def namestiKranjuTacku(self, pos):
+            for idx, lineItem in enumerate(self.group.childItems()):
+                line = lineItem.line()
+                line.setP1(QPointF(line.x1(), line.y1()))
+                line.setP2(QPointF(pos.x(), pos.y() + idx))
+                lineItem.setLine(line)
+                print(line)
+
+        def itemPreview(self):
+            ps = self.previewItem.size()
+            pix = QPixmap(ps)
+            p = QPainter(pix)
+            p.setBackgroundMode(Qt.BGMode.OpaqueMode)
+            p.setPen(self.pen)
+            p.setBackground(self.brush)
+            p.drawText(0, 0, ps.width(), ps.height(), Qt.Alignment.AlignCenter, "Line")
+            return pix
+
+    class Point(Item):
+        # self.item je u ovoj klasi Group
         def start(self, pos, rad, pen, brush):
+            self.group = Group()
             self.debljinaLinije = rad
             self.pen = pen
             self.brush = brush
@@ -53,20 +112,25 @@ class Drawing:
         def continue_(self, pos):
             self.dodajPoint(pos)
 
-        def end(self):
-            self.previewScene.addItem(self.group)
-            self.previewItem.updatePreview(self.itemPreview())
-            return self.group
-
         def dodajPoint(self, pos):
             x, y = pos.x(), pos.y()
             rad = self.debljinaLinije
 
-            item = QGraphicsEllipseItem(x - rad, y - rad, rad * 2.0, rad * 2.0)
-            item.setPen(self.pen)
-            item.setBrush(self.brush)
+            point = QGraphicsEllipseItem(x - rad, y - rad, rad * 2.0, rad * 2.0)
+            point.setPen(self.pen)
+            point.setBrush(self.brush)
 
-            self.group.addToGroup(item)
+            self.group.addToGroup(point)
+
+        def itemPreview(self):
+            ps = self.previewItem.size()
+            pix = QPixmap(ps)
+            p = QPainter(pix)
+            p.setBackgroundMode(Qt.BGMode.OpaqueMode)
+            p.setPen(self.pen)
+            p.setBackground(self.brush)
+            p.drawText(0, 0, ps.width(), ps.height(), Qt.Alignment.AlignCenter, "Point")
+            return pix
 
     def __init__(self, graphicsView):
         self.graphicsView = graphicsView
@@ -75,7 +139,7 @@ class Drawing:
         self.brush = QBrush(QColor("black"))
         self.debljinaLinije = 1
 
-        self.method = None  # Item koji crtamo koji ima metode potrebe za crtanje
+        self.method = None  # ima metode potrebe za crtanje
         self.active = False
 
     def pokreni(self, event: QMouseEvent):
@@ -85,10 +149,11 @@ class Drawing:
         self.graphicsView.setInteractive(False)
         self.scene.clearSelection()
         pos = self.graphicsView.mapToScene(event.position().toPoint())
-        itemGroup = self.method.start(pos, self.debljinaLinije, self.pen, self.brush)
+        item = self.method.start(pos, self.debljinaLinije, self.pen, self.brush)
         self.graphicsView.imgControls.ui.itemsList.layout().insertWidget(0, self.method.previewItem)
 
-        self.scene.addItem(itemGroup)
+
+        self.scene.addItem(item)
 
     def nastavi(self, event: QMouseEvent):
         if not self.active:
@@ -120,6 +185,7 @@ class Drawing:
 
     def namestiMetoduCrtanja(self, drawingMethod):
         self.method = drawingMethod(self.scene)
+
 
 class Group(QGraphicsItemGroup):
     def __init__(self, *args, **kwargs):

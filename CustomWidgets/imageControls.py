@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QGraphicsItem, QFileDialog
+from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QGraphicsItem
 from PyQt6.QtGui import QIcon, QPainter, QPixmap
 from PyQt6.QtCore import pyqtSignal, QRectF, QPropertyAnimation, QParallelAnimationGroup
 from ImageViewerRepo.UI.imageControlsUI import Ui_imageControls
@@ -17,6 +17,7 @@ class ImageControls(QWidget):
         self.ui.horizontalSlider.valueChanged.connect(self.sliderValueChanged)
 
         self.dodajMetoduCrtanja(QIcon("icons:exit.png"), self.drawing.Point)
+        self.dodajMetoduCrtanja(QIcon("icons:mainIcon.ico"), self.drawing.Line)
 
         self.animGroup = QParallelAnimationGroup()
         self.namestiAnimacije()
@@ -43,10 +44,6 @@ class ImageControls(QWidget):
             self.editMode = True
 
         self.animGroup.start()
-
-    def sacuvaj(self):
-        fileName, _fileType = QFileDialog.getSaveFileName(caption="Sacuvaj fajl")
-        self.ui.graphicsView.sacuvajFajl(fileName)
 
     def dodajMetoduCrtanja(self, icon, drawingMethod):
         btn = QPushButton(icon, "")

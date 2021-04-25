@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt6.QtGui import QIcon, QFontDatabase, QImageReader
 from PyQt6 import QtCore
 from ImageViewerRepo.UI import mainWindowUI
-from ImageViewerRepo.CustomWidgets import imageControls
+from ImageViewerRepo.CustomWidgets import imageControls, saveDialog
 from pathlib import Path
 import sys
 
@@ -59,7 +59,13 @@ class MainWindow(QMainWindow):
         if not self.ui.tabWidget.tabBar().count():
             return
         imgControl = self.ui.tabWidget.currentWidget()
-        imgControl.sacuvaj()
+
+        fileName, nacin = saveDialog.SaveDialog.izaberiNacinCuvanja(self, imgControl.ui.graphicsView)
+
+        if not nacin or not fileName:
+            return
+
+        imgControl.ui.graphicsView.sacuvajFajl(fileName, nacin)
 
 
 if __name__ == '__main__':
