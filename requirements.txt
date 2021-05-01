@@ -1,0 +1,8 @@
+certifi==2020.12.5
+chardet==4.0.0
+idna==2.10
+PyQt6==6.0.3
+PyQt6-Qt6==6.0.2
+PyQt6-sip==13.0.1
+requests==2.25.1
+urllib3==1.26.4
