@@ -18,7 +18,7 @@ def upload(image, client_id, naslov=None, opis=None, album=None):
     response = requests.post(uploadLink, headers=headers, files=files)
     jsonResponse = json.loads(response.text)
     if not jsonResponse["success"]:
-        return
+        return False, False
 
     return jsonResponse["data"]["id"], jsonResponse["data"]["deletehash"]
 
@@ -27,6 +27,6 @@ def delete(client_id, deleteHash):
     response = requests.delete(deleteLink.format(deleteHash), headers=headers)
     jsonResponse = json.loads(response.text)
     if not jsonResponse["success"]:
-        print("au nece ")
-    else:
-        print("aa dobroe")
+        print(jsonResponse["data"]["error"])
+        return False, jsonResponse["data"]["error"]
+    return True, None

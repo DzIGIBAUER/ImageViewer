@@ -1,5 +1,6 @@
-from PyQt6.QtWidgets import QDialog, QPushButton, QGridLayout, QLabel, QFileDialog, QColorDialog, QCheckBox
-from PyQt6.QtGui import QColor, QBrush
+from PyQt6.QtWidgets import (QDialog, QPushButton, QGridLayout, QLabel, QFileDialog, QColorDialog, QCheckBox, QFrame,
+                             QVBoxLayout)
+from PyQt6.QtGui import QBrush
 from PyQt6.QtCore import Qt
 
 class SaveDialog(QDialog):
@@ -13,10 +14,15 @@ class SaveDialog(QDialog):
 
         self.grid = QGridLayout()
         self.setLayout(self.grid)
+        self.setMaximumSize(400, 400)
+
+        self.slikaPrikazFrame = QFrame(self)
 
         self.slikaPrikaz = QLabel(self)
         self.slikaButton = QPushButton("SAMO SLIKA", self)
         self.slikaButton.clicked.connect(lambda: self.klik(1))
+
+        self.itemsPrikazFrame = QFrame(self)
 
         self.itemsPrikaz = QLabel(self)
         self.itemsButton = QPushButton("SVI ITEMI", self)
@@ -31,10 +37,17 @@ class SaveDialog(QDialog):
 
         self.renderujPrikaze()
 
-        self.grid.addWidget(self.slikaPrikaz, 0, 0)
-        self.grid.addWidget(self.slikaButton, 1, 0)
-        self.grid.addWidget(self.itemsPrikaz, 0, 1)
-        self.grid.addWidget(self.itemsButton, 1, 1)
+        self.slikaPrikazFrame.setLayout(QVBoxLayout())
+        self.slikaPrikazFrame.layout().addWidget(self.slikaPrikaz)
+        self.slikaPrikazFrame.layout().addWidget(self.slikaButton)
+
+        self.itemsPrikazFrame.setLayout(QVBoxLayout())
+        self.itemsPrikazFrame.layout().addWidget(self.itemsPrikaz)
+        self.itemsPrikazFrame.layout().addWidget(self.itemsButton)
+
+        self.grid.addWidget(self.slikaPrikazFrame, 0, 0)
+        self.grid.addWidget(self.itemsPrikazFrame, 0, 1)
+
         self.grid.addWidget(self.bojaPozadineButton, 2, 0)
         self.grid.addWidget(self.providnaPozadinaButton, 2, 1)
         self.grid.addWidget(self.opomena, 3, 0)
@@ -57,8 +70,10 @@ class SaveDialog(QDialog):
 
     def renderujPrikaze(self):
         pixS, pixI = self.graphicsView.renderScene(1), self.graphicsView.renderScene(2)
-        self.slikaPrikaz.setPixmap(pixS)
-        self.itemsPrikaz.setPixmap(pixI)
+        if pixS.width() == pixI.width() and pixS.height() == pixI.height():
+            self.itemsPrikazFrame.hide()
+        self.slikaPrikaz.setPixmap(pixS.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio))
+        self.itemsPrikaz.setPixmap(pixI.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio))
 
     @classmethod
     def izaberiNacinCuvanja(cls, parent, graphicsView):

@@ -23,7 +23,7 @@ class SideBar(QFrame):
             eValue = self.shrinkedWidth
             self.expanded = False
         else:
-            eValue = 100
+            eValue = 150
             self.expanded = True
 
         self.animacija.setStartValue(pValue)
