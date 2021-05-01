@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QGraphicsItem
-from PyQt6.QtGui import QIcon, QPainter, QPixmap
-from PyQt6.QtCore import pyqtSignal, QRectF, QPropertyAnimation, QParallelAnimationGroup
+from PyQt6.QtWidgets import QWidget, QPushButton
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import QPropertyAnimation, QParallelAnimationGroup
 from ImageViewerRepo.UI.imageControlsUI import Ui_imageControls
 
 class ImageControls(QWidget):
@@ -27,7 +27,7 @@ class ImageControls(QWidget):
 
         self.animGroup = QParallelAnimationGroup()
         self.namestiAnimacije()
-        self.editMode = True
+        self.editMode = False
 
     def namestiAnimacije(self):
         itemListAnim = QPropertyAnimation(self.ui.itemsList, b"maximumWidth")
@@ -41,7 +41,7 @@ class ImageControls(QWidget):
         self.animGroup.addAnimation(itemListAnim)
         self.animGroup.addAnimation(toolBarAnim)
 
-    def toogleEdit(self):
+    def toggleEdit(self):
         if self.editMode:
             self.animGroup.setDirection(QParallelAnimationGroup.Direction.Backward)
             self.editMode = False

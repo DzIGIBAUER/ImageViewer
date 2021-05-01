@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
-from PyQt6.QtGui import (QResizeEvent, QPaintEvent, QMouseEvent, QWheelEvent, QPixmap, QColor, QPen, QBrush, QImage,
+from PyQt6.QtGui import (QResizeEvent, QMouseEvent, QWheelEvent, QPixmap, QColor, QBrush, QImage,
                          QPainter)
-from PyQt6.QtCore import Qt, QRectF, QPointF, QPoint, pyqtSignal
+from PyQt6.QtCore import Qt, QRectF
 from ImageViewerRepo.CustomWidgets.drawing import Drawing
 
 class GraphicsView(QGraphicsView):

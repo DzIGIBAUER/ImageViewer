@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QFileDialog, QFrame, QVB
 from PyQt6.QtGui import QIcon, QFontDatabase, QImageReader, QPixmap
 from PyQt6 import QtCore
 from ImageViewerRepo.UI import mainWindowUI
-from ImageViewerRepo.CustomWidgets import imageControls, saveDialog, uploadDialog, starLineEdit
+from ImageViewerRepo.CustomWidgets import imageControls, saveDialog, uploadDialog
 from ImageViewerRepo import database, uploadImage
 from functools import partial
 from pathlib import Path
@@ -22,9 +22,10 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
         sb = self.ui.sideBar
-        sb.dodajDugme(QIcon("icons:mainIcon.ico"), "EJ", sb.toggleSideBar)
-        sb.dodajDugme(QIcon("icons:exit.png"), "Edit", self.toggleMain)
-        sb.dodajDugme(QIcon("icons:home.png"), "Podesavanje", self.togglePodesavanje)
+        sb.dodajDugme(QIcon("icons:menu.png"), "EJ", sb.toggleSideBar)
+        sb.dodajDugme(QIcon("icons:home.png"), "Edit", self.toggleMain)
+        sb.dodajDugme(QIcon("icons:gear.png"), "Podesavanje", self.togglePodesavanje)
+        sb.dodajDugme(QIcon("icons:pen.png"), "Edit", self.toggleEditing)
 
         self.ui.actionOpen.triggered.connect(self.otvoriFajl)
         self.ui.actionSave.triggered.connect(self.sacuvaj)
@@ -99,19 +100,21 @@ class MainWindow(QMainWindow):
             return
 
         imgControl = self.ui.tabWidget.currentWidget()
-        imgControl.toogleEdit()
+        imgControl.toggleEdit()
 
     def togglePodesavanje(self):
         if not self.ui.stackedWidget.currentIndex() == 1:
             self.ui.stackedWidget.setCurrentIndex(1)
         else:
-            self.ui.stackedWidget.setCurrentIndex(2)
+            if self.ui.tabWidget.count() != 0:
+                self.ui.stackedWidget.setCurrentIndex(2)
 
     def toggleMain(self):
         if not self.ui.stackedWidget.currentIndex() == 0:
             self.ui.stackedWidget.setCurrentIndex(0)
         else:
-            self.ui.stackedWidget.setCurrentIndex(2)
+            if self.ui.tabWidget.count() != 0:
+                self.ui.stackedWidget.setCurrentIndex(2)
 
     def azurirajMain(self):
         uploadovaneSlike = self.dbc.uploadovaneSlike()
@@ -119,6 +122,8 @@ class MainWindow(QMainWindow):
             nemaLabel = QLabel("NEMATE UPLOUDOVANIH SLIKA", self.ui.frame)
             nemaLabel.setStyleSheet("font-size: 25px;")
             self.ui.frame.layout().addWidget(nemaLabel)
+
+        [self.ui.frame.layout().removeWidget(w) for w in self.ui.frame.layout().children()]
 
         for info in uploadovaneSlike:
             id_, naslov, opis, deletehash, data = info
@@ -204,12 +209,13 @@ class MainWindow(QMainWindow):
     def pixmapFromBytes(self, data):
         ba = QtCore.QByteArray(data)
         pixmap = QPixmap()
-        ok = pixmap.loadFromData(data, "PNG")
+        ok = pixmap.loadFromData(data)
         assert ok
         return pixmap
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    print(sys.argv)
 
     # Back up the reference to the exceptionhook
     sys._excepthook = sys.excepthook

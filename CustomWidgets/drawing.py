@@ -1,7 +1,7 @@
-from PyQt6.QtWidgets import (QPushButton, QGraphicsScene, QGraphicsItemGroup, QGraphicsItem, QGraphicsEllipseItem,
+from PyQt6.QtWidgets import (QPushButton, QGraphicsScene, QGraphicsItemGroup, QGraphicsEllipseItem,
                              QColorDialog, QLabel, QGraphicsLineItem, QGraphicsPixmapItem, QFileDialog)
-from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPaintEvent, QPixmap, QPainterPath
-from PyQt6.QtCore import pyqtSignal, Qt, QPointF, QRectF
+from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPaintEvent, QPixmap
+from PyQt6.QtCore import pyqtSignal, Qt, QPointF
 
 
 class ItemPreview(QLabel):
