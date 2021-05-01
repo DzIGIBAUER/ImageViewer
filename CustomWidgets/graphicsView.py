@@ -70,7 +70,6 @@ class GraphicsView(QGraphicsView):
         elif nacin == 2:
             r = self.scene_.itemsBoundingRect().toRect()
         else:
-            print("sta bre")
             return
 
         pix = QPixmap(r.size())
@@ -84,7 +83,6 @@ class GraphicsView(QGraphicsView):
         elif nacin == 2:
             r = self.scene_.itemsBoundingRect().toRect()
         else:
-            print("sta bre")
             return
         img = QImage(r.size(), QImage.Format.Format_A2BGR30_Premultiplied)
         p = QPainter(img)

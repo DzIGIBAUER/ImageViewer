@@ -79,7 +79,10 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <property name="spacing">
+         <property name="horizontalSpacing">
+          <number>1</number>
+         </property>
+         <property name="verticalSpacing">
           <number>0</number>
          </property>
          <item row="0" column="1">
@@ -246,7 +249,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>TextLabel</string>
+            <string>Dodati Itemi</string>
            </property>
           </widget>
          </item>

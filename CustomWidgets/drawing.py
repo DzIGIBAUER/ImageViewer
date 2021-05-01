@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QPushButton, QGraphicsScene, QGraphicsItemGroup, QGraphicsItem, QGraphicsEllipseItem,
-                             QColorDialog, QLabel, QGraphicsLineItem)
+                             QColorDialog, QLabel, QGraphicsLineItem, QGraphicsPixmapItem, QFileDialog)
 from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPaintEvent, QPixmap, QPainterPath
 from PyQt6.QtCore import pyqtSignal, Qt, QPointF, QRectF
 
@@ -22,7 +22,6 @@ class ItemPreview(QLabel):
 
     def paintEvent(self, event: QPaintEvent):
         super().paintEvent(event)
-        print(self.item.isSelected())
         if self.item.isSelected():
             p = QPainter(self)
             sz = self.size()
@@ -34,7 +33,6 @@ class ItemPreview(QLabel):
             self.item.setSelected(False)
         else:
             self.item.setSelected(True)
-            print(self.item.isSelected())
 
 
 # ovu klasu inherituje svaki drawingMethod
@@ -63,6 +61,34 @@ class Item:
 
 class Drawing:
     # ove klase su drawingMethod
+    class Image(Item):
+        def __init__(self, gs):
+            super().__init__(gs)
+            self.imgPath, _ = QFileDialog.getOpenFileName(caption="Izaberite sliku")
+
+            if self.imgPath:
+                self.pixmap = QPixmap(self.imgPath)
+
+        def start(self, pos, *_):
+            if self.pixmap.isNull():
+                return
+
+            self.konstruisiSliku(self.pixmap, pos)
+            return self.group
+
+        def continue_(self, pos):
+            item: QGraphicsPixmapItem = self.group.childItems()[0]
+            rect = item.boundingRect()
+            w, h = abs(pos.x() - item.pos().x()), abs(pos.y() - item.pos().y())
+            item.setPixmap(self.pixmap.scaled(w, h, Qt.AspectRatioMode.IgnoreAspectRatio,
+                                              Qt.TransformationMode.SmoothTransformation))
+
+        def konstruisiSliku(self, pixmap, pos):
+            item = QGraphicsPixmapItem(pixmap.scaled(1, 1, Qt.AspectRatioMode.IgnoreAspectRatio,
+                                                     Qt.TransformationMode.SmoothTransformation))
+            item.setPos(pos.x(), pos.y())
+            self.group.addToGroup(item)
+
     class Line(Item):
         def start(self, pos, debljinaLinije, pen, brush):
             self.debljinaLinije = debljinaLinije
@@ -87,7 +113,6 @@ class Drawing:
                 line.setP1(QPointF(line.x1(), line.y1()))
                 line.setP2(QPointF(pos.x(), pos.y() + idx))
                 lineItem.setLine(line)
-                print(line)
 
         def itemPreview(self):
             ps = self.previewItem.size()
@@ -150,6 +175,9 @@ class Drawing:
         self.scene.clearSelection()
         pos = self.graphicsView.mapToScene(event.position().toPoint())
         item = self.method.start(pos, self.debljinaLinije, self.pen, self.brush)
+        if not item:
+            self.active = False
+            return
         self.graphicsView.imgControls.ui.itemsList.layout().insertWidget(0, self.method.previewItem)
 
 
@@ -174,12 +202,12 @@ class Drawing:
         self.debljinaLinije = debljina or 0
 
     def izaberiPenBoju(self, clickedButton: QPushButton):
-        color = QColorDialog.getColor(title="Izaberite pen boju")
+        color = QColorDialog.getColor(title="Izaberite pen boju", initial=self.pen.color())
         self.pen.setColor(color)
         clickedButton.setStyleSheet(f"background-color: {color.name()};")
 
     def izaberiBrushBoju(self, clickedButton: QPushButton):
-        color = QColorDialog.getColor(title="Izaberite brush boju")
+        color = QColorDialog.getColor(title="Izaberite brush boju", initial=self.brush.color())
         self.brush.setColor(color)
         clickedButton.setStyleSheet(f"background-color: {color.name()};")
 

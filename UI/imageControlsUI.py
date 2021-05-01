@@ -34,7 +34,8 @@ class Ui_imageControls(object):
         self.frame.setObjectName("frame")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.frame)
         self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout_2.setSpacing(0)
+        self.gridLayout_2.setHorizontalSpacing(1)
+        self.gridLayout_2.setVerticalSpacing(0)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.brushColorSelect = QtWidgets.QPushButton(self.frame)
         self.brushColorSelect.setText("")
@@ -121,7 +122,7 @@ class Ui_imageControls(object):
         imageControls.setWindowTitle(_translate("imageControls", "Form"))
         self.penColorSelectLabel.setText(_translate("imageControls", "Pen"))
         self.brushColorSelectLabel.setText(_translate("imageControls", "Brush"))
-        self.nesto.setText(_translate("imageControls", "TextLabel"))
+        self.nesto.setText(_translate("imageControls", "Dodati Itemi"))
 from ImageViewerRepo.CustomWidgets.graphicsView import GraphicsView
 
 
