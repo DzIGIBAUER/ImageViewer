@@ -1,7 +1,8 @@
 from PyQt6.QtWidgets import (QPushButton, QGraphicsScene, QGraphicsItemGroup, QGraphicsEllipseItem,
-                             QColorDialog, QLabel, QGraphicsLineItem, QGraphicsPixmapItem, QFileDialog)
+                             QColorDialog, QLabel, QGraphicsLineItem, QGraphicsPixmapItem, QFileDialog,
+                             QGraphicsRectItem)
 from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPaintEvent, QPixmap
-from PyQt6.QtCore import pyqtSignal, Qt, QPointF
+from PyQt6.QtCore import pyqtSignal, Qt, QPointF, QRectF
 
 
 class ItemPreview(QLabel):
@@ -37,9 +38,11 @@ class ItemPreview(QLabel):
 
 # ovu klasu inherituje svaki drawingMethod
 class Item:
-    def __init__(self, glavnaScena):
+    def __init__(self, glavnaScena, signal=None, callback=None):
         self.debljinaLinije, self.pen, self.brush = None, None, None
         self.group = Group()
+        self.signal = signal
+        self.callback = callback
         # ne korisimo previewScene trenutno, pogledaj ispod
         self.previewScene = QGraphicsScene()
         # self.previewScene.setBackgroundBrush(QBrush(QColor("white")))
@@ -61,6 +64,36 @@ class Item:
 
 class Drawing:
     # ove klase su drawingMethod
+    class Rect(Item):
+        def start(self, pos, *_):
+            self.konstruisiRect(pos)
+            return self.group
+
+        def continue_(self, pos):
+            item: QGraphicsRectItem = self.group.childItems()[0]
+            x, y = item.pos().x(), item.pos().y()
+            w, h = abs(pos.x() - x), abs(pos.y() - y)
+            print("SV", x, y, w, h, pos)
+            item.setRect(0, 0, w, h)
+
+        def end(self):
+            if not self.signal:
+                super().end()
+                return
+            itm = self.group.childItems()[0]
+            br = itm.boundingRect().size()
+
+            r = QRectF(itm.x(), itm.y(), br.width(), br.height())
+            print(self.group.childItems(), r)
+            self.signal.emit(r)
+            [self.group.removeFromGroup(item) for item in self.group.childItems()]
+
+        def konstruisiRect(self, pos):
+            item = QGraphicsRectItem(0, 0, 0, 0)
+            item.setPos(pos)
+            print(pos)
+            self.group.addToGroup(item)
+
     class Image(Item):
         def __init__(self, gs):
             super().__init__(gs)
@@ -78,7 +111,6 @@ class Drawing:
 
         def continue_(self, pos):
             item: QGraphicsPixmapItem = self.group.childItems()[0]
-            rect = item.boundingRect()
             w, h = abs(pos.x() - item.pos().x()), abs(pos.y() - item.pos().y())
             item.setPixmap(self.pixmap.scaled(w, h, Qt.AspectRatioMode.IgnoreAspectRatio,
                                               Qt.TransformationMode.SmoothTransformation))
@@ -195,7 +227,8 @@ class Drawing:
             self.active = False
             self.graphicsView.setInteractive(True)
             item = self.method.end()
-            self.scene.addItem(item)
+            if item:
+                self.scene.addItem(item)
             self.method = None
 
     def namestiDebljinuLinije(self, debljina):
@@ -211,8 +244,9 @@ class Drawing:
         self.brush.setColor(color)
         clickedButton.setStyleSheet(f"background-color: {color.name()};")
 
-    def namestiMetoduCrtanja(self, drawingMethod):
-        self.method = drawingMethod(self.scene)
+    # signal ce biti pozvan kada se zavrsi crtanje, a funkcija koje slusa signal ce na kraju da pozove callback
+    def namestiMetoduCrtanja(self, drawingMethod, signal=None, callback=None):
+        self.method = drawingMethod(self.scene, signal, callback)
 
 
 class Group(QGraphicsItemGroup):

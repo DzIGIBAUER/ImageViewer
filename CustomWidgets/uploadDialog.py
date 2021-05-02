@@ -12,7 +12,6 @@ class UploadDialog(QDialog):
 
         self.naslovEdit = QLineEdit(self)
         self.naslovEdit.setPlaceholderText("Naslov")
-
         slikaPrikaz = QLabel(self)
         slikaPrikaz.setPixmap(pixmap.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio))
 

@@ -3,11 +3,17 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QFileDialog, QFrame, QVB
 from PyQt6.QtGui import QIcon, QFontDatabase, QImageReader, QPixmap
 from PyQt6 import QtCore
 from ImageViewerRepo.UI import mainWindowUI
-from ImageViewerRepo.CustomWidgets import imageControls, saveDialog, uploadDialog
+from ImageViewerRepo.CustomWidgets import imageControls, saveDialog, uploadDialog, renderNacinDialog
 from ImageViewerRepo import database, uploadImage
 from functools import partial
 from pathlib import Path
+from enum import Enum
 import sys
+
+class StackedWidgetsEnum(Enum):
+    main = 0
+    podesavanje = 1
+    tabWidget = 2
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -29,7 +35,7 @@ class MainWindow(QMainWindow):
 
         self.ui.actionOpen.triggered.connect(self.otvoriFajl)
         self.ui.actionSave.triggered.connect(self.sacuvaj)
-        self.ui.actionUpload.triggered.connect(lambda: self.sacuvaj(True))
+        self.ui.actionUpload.triggered.connect(lambda: self.upload())
 
         self.setWindowIcon(QIcon("icons:mainIcon.ico"))
         self.setWindowTitle("Image Viewer aplikacija :D :D")
@@ -89,7 +95,7 @@ class MainWindow(QMainWindow):
             frame.layout().removeWidget(frame)
         else:
             erd = QMessageBox()
-            odg = erd.question(self, "Doslo je do greske", f"Slika nije mogla biti obrisana.\nRazlog: {poruka}\n" \
+            odg = erd.question(self, "Doslo je do greske", f"Slika nije mogla biti obrisana.\nRazlog: {poruka}\n"
                                                            + "Da li zelite da je izbrisete iz samo iz aplikacije?")
             if odg is erd.StandardButtons.Yes:
                 self.dbc.izbrisiUploadovanuSliku(id_)
@@ -103,18 +109,18 @@ class MainWindow(QMainWindow):
         imgControl.toggleEdit()
 
     def togglePodesavanje(self):
-        if not self.ui.stackedWidget.currentIndex() == 1:
-            self.ui.stackedWidget.setCurrentIndex(1)
+        if not self.ui.stackedWidget.currentIndex() == StackedWidgetsEnum.podesavanje.value:
+            self.ui.stackedWidget.setCurrentIndex(StackedWidgetsEnum.podesavanje.value)
         else:
-            if self.ui.tabWidget.count() != 0:
-                self.ui.stackedWidget.setCurrentIndex(2)
+            if self.ui.tabWidget.count() != StackedWidgetsEnum.main.value:
+                self.ui.stackedWidget.setCurrentIndex(StackedWidgetsEnum.tabWidget.value)
 
     def toggleMain(self):
-        if not self.ui.stackedWidget.currentIndex() == 0:
-            self.ui.stackedWidget.setCurrentIndex(0)
+        if not self.ui.stackedWidget.currentIndex() == StackedWidgetsEnum.main.value:
+            self.ui.stackedWidget.setCurrentIndex(StackedWidgetsEnum.main.value)
         else:
-            if self.ui.tabWidget.count() != 0:
-                self.ui.stackedWidget.setCurrentIndex(2)
+            if self.ui.tabWidget.count() != StackedWidgetsEnum.main.value:
+                self.ui.stackedWidget.setCurrentIndex(StackedWidgetsEnum.tabWidget.value)
 
     def azurirajMain(self):
         uploadovaneSlike = self.dbc.uploadovaneSlike()
@@ -168,35 +174,51 @@ class MainWindow(QMainWindow):
     def sacuvajPodesavanja(self):
         self.dbc.namestiClientID(self.ui.lineEditClientID.raw)
 
-    def sacuvaj(self, upload):
-        if not self.ui.tabWidget.tabBar().count():
+    def sacuvaj(self):
+        if (not self.ui.tabWidget.tabBar().count() or  # ako nema otvorenih slika nemamo sta da sacuvamo
+                self.ui.stackedWidget.currentIndex() != StackedWidgetsEnum.tabWidget.value):  # ako nismo u tabWidget
             return
-        imgControl = self.ui.tabWidget.currentWidget()
 
-        if upload:
-            pix = imgControl.ui.graphicsView.renderScene(1)
-            nastavi, naslov, opis = uploadDialog.UploadDialog.uploadFile(self, pix)
-            if not nastavi:
-                return
-            id_, deletehash = uploadImage.upload(self.bytesFromPixmap(pix), self.dbc.clientID(), naslov, opis)
+        imgControls = self.ui.tabWidget.currentWidget()  # trenutni ImageControls widget gde je slika
 
-            if not id_ and not deletehash:
-                mb = QMessageBox()
-                mb.information(self, "Doslo je do greske", "Doslo je do neocekivane greske")
-                return
+        renderNacin = renderNacinDialog.RenderNacin.izaberiNacinCuvanja(self, imgControls.ui.graphicsView)
+        if not renderNacin:
+            return
 
-            self.dbc.dodajUploadovanuSliku(id_, naslov, opis, deletehash, self.bytesFromPixmap(pix.scaled(
-                100, 100, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
-                                           )
-            self.azurirajMain()
+        imgControls.ui.graphicsView.sacuvajFajl(renderNacin)
 
-        else:
-            fileName, nacin = saveDialog.SaveDialog.izaberiNacinCuvanja(self, imgControl.ui.graphicsView)
+    def upload(self):
+        if (not self.ui.tabWidget.tabBar().count() or  # ako nema otvorenih slika nemamo sta da sacuvamo
+                self.ui.stackedWidget.currentIndex() != StackedWidgetsEnum.tabWidget.value):  # ako nismo u tabWidget
+            return
 
-            if not nacin or not fileName:
-                return
+        imgControls = self.ui.tabWidget.currentWidget()  # trenutni ImageControls widget gde je slika
 
-            imgControl.ui.graphicsView.sacuvajFajl(fileName, nacin)
+        renderNacin = renderNacinDialog.RenderNacin.izaberiNacinCuvanja(self, imgControls.ui.graphicsView)
+        if not renderNacin:
+            return
+
+        imgControls.ui.graphicsView.spremiUpload(self.zavrsiUpload)
+
+
+    def zavrsiUpload(self, pix):
+        print(pix)
+        return
+        nastavi, naslov, opis = uploadDialog.UploadDialog.uploadFile(self, pix)
+
+        if not nastavi:
+            return
+        id_, deletehash = uploadImage.upload(self.bytesFromPixmap(pix), self.dbc.clientID(), naslov, opis)
+
+        if not id_ and not deletehash:
+            mb = QMessageBox()
+            mb.information(self, "Greška", "Došlo je do neocekivane greške")
+            return
+
+        self.dbc.dodajUploadovanuSliku(id_, naslov, opis, deletehash, self.bytesFromPixmap(pix.scaled(
+            100, 100, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
+                                       )
+        self.azurirajMain()
 
     def bytesFromPixmap(self, pixmap):
         ba = QtCore.QByteArray()

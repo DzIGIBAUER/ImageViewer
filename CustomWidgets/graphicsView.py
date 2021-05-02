@@ -1,20 +1,31 @@
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QFileDialog
 from PyQt6.QtGui import (QResizeEvent, QMouseEvent, QWheelEvent, QPixmap, QColor, QBrush, QImage,
                          QPainter)
-from PyQt6.QtCore import Qt, QRectF
+from PyQt6.QtCore import Qt, QRectF, pyqtSignal
 from ImageViewerRepo.CustomWidgets.drawing import Drawing
+from enum import Enum
 
 class GraphicsView(QGraphicsView):
+    class NacinEnum(Enum):
+        slika = 1
+        items = 2
+        custom = 3
+
+    dimenzijeIzabrane = pyqtSignal(QRectF)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.imgControls = args[0].parentWidget()
         self.pixmapItem = QGraphicsPixmapItem()
         self.pixmap = QPixmap()
-
         self.scene_ = QGraphicsScene()
         self.scene_.setBackgroundBrush(QBrush(QColor("white")))
         self.previewScene = QGraphicsScene()  # scena za renderovanje itema koji su onda prikazani sa desne strane
         self.setScene(self.scene_)
+
+        # metoda koja ceka dimenzije koje biramo kada cuvamo ili upload-ujemo slike, nemstamo po potrebi
+        self.waitingCallback = None
+        self.dimenzijeIzabrane.connect(self.dimenzijaIzabrana)
 
         self.drawing = Drawing(self)
         self.zoomLevel = 1.0
@@ -64,26 +75,86 @@ class GraphicsView(QGraphicsView):
         self.scene_.setSceneRect(nRect)
         self.panPoint = event.position()
 
-    def renderScene(self, nacin):
-        if nacin == 1:
+    '''
+    renderuje deo scene u zavisnosti od nacina koji je prosledjen
+    dimenzije su potrebne ako je nacin NacinEnum.custom, a ako nisu prosledjenje bice pokrenuta metoda crtanja
+    Rect-a kako bi korisnik izabrao dimenzije i onda ce ista funkcija biti pozvana samo sto sada imamo dimenzije.
+    Drawing method ce emit-ovati signal koji joj je prosledjen
+    '''
+    def renderScene(self, nacin, dimenzije=None):
+        if nacin == self.NacinEnum.slika:
             r = self.pixmapItem.pixmap().rect()
-        elif nacin == 2:
+        elif nacin == self.NacinEnum.items:
             r = self.scene_.itemsBoundingRect().toRect()
+        elif nacin == self.NacinEnum.custom:
+
+            if not dimenzije:
+                self.izaberiDimenzije()
+                return
+            r = dimenzije.toRect()
         else:
             return
-
         pix = QPixmap(r.size())
         p = QPainter(pix)
         self.scene_.render(p, QRectF(pix.rect()), QRectF(r))
+        print(r)
         return pix
 
-    def sacuvajFajl(self, fileName, nacin):
-        if nacin == 1:
+    def spremiUpload(self, callback):
+        self.waitingCallback = callback
+        self.izaberiDimenzije()
+
+    def uploadSpreman(self, dimenzije):
+        pix = self.renderScene(self.NacinEnum.custom, dimenzije)
+        self.waitingCallback(pix)
+        self.waitingCallback = None
+
+    def izaberiDimenzije(self):
+        self.drawing.namestiMetoduCrtanja(self.drawing.Rect, self.dimenzijeIzabrane)
+
+    ''' ova metoda slusa za zavrsenje biranje dimenzija slike koju treba da renderujemo u renderScene'''
+    def dimenzijaIzabrana(self, dimenzije):
+        print("izabrano")
+        self.waitingCallback(self.NacinEnum.custom, dimenzije)
+
+
+    def sacuvajFajl(self, nacin, dimenzije=None):
+        if nacin == self.NacinEnum.custom:
+            if not dimenzije:
+                # ovu funkciju ce pozvati dimenzijaIzabrana kada dobije dimenzije
+                self.waitingCallback = self.sacuvajFajl
+                print(nacin)
+                self.renderScene(nacin)
+                return  # nista ne radi dalje, radi cemo kada dobijemo dimenzije
+            else:
+                self.waitingCallback = None
+                pixmap = self.renderScene(nacin, dimenzije)
+        else:
+            pixmap = self.renderScene(nacin)
+
+        fileName, _ = QFileDialog.getSaveFileName(self, "Sacuvajte fajl")
+        if not fileName:
+            return
+        pixmap.save(f"{fileName}.png")
+
+
+    def sacuvajFajll(self, nacin, dimenzije=None):  # dimenzije su namestene samo ako je nacin == NacinEnum.custom
+        if nacin == self.NacinEnum.slika:
             r = self.pixmapItem.pixmap().rect()
-        elif nacin == 2:
+        elif nacin == self.NacinEnum.items:
             r = self.scene_.itemsBoundingRect().toRect()
+        elif nacin == self.NacinEnum.custom:
+            if not dimenzije:
+                self.drawing.namestiMetoduCrtanja(self.drawing.Rect, self.dimenzijeIzabrane)
+                return
+            r = dimenzije.toRect()
         else:
             return
+
+        fileName, _ = QFileDialog.getSaveFileName(self, "Sacuvajte fajl")
+        if not fileName:
+            return
+
         img = QImage(r.size(), QImage.Format.Format_A2BGR30_Premultiplied)
         p = QPainter(img)
         self.scene_.render(p, QRectF(img.rect()), QRectF(r))
