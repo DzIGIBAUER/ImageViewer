@@ -131,6 +131,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addItem(spacerItem3, 3, 0, 1, 2)
         self.checkBox = QtWidgets.QCheckBox(self.podesavanja)
         self.checkBox.setObjectName("checkBox")
+        self.checkBox.setChecked(True);
         self.gridLayout.addWidget(self.checkBox, 1, 1, 1, 1)
         self.stackedWidget.addWidget(self.podesavanja)
         self.tb = QtWidgets.QWidget()
