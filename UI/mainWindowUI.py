@@ -194,8 +194,8 @@ class Ui_MainWindow(object):
         self.actionOpen.setText(_translate("MainWindow", "Open"))
         self.actionSave.setText(_translate("MainWindow", "Save"))
         self.actionUpload.setText(_translate("MainWindow", "Upload"))
-from ImageViewerRepo.CustomWidgets.sideBar import SideBar
-from ImageViewerRepo.CustomWidgets.starLineEdit import StarLineEdit
+from CustomWidgets.sideBar import SideBar
+from CustomWidgets.starLineEdit import StarLineEdit
 
 
 if __name__ == "__main__":

@@ -134,7 +134,7 @@ class MainWindow(QMainWindow):
             self.ui.frame.layout().addWidget(nemaLabel)
 
         for widget in self.ui.frame.children():
-            if type(widget) == QFrame:
+            if type(widget) == QFrame or type(widget) == QLabel:
                 self.ui.frame.layout().removeWidget(widget)
 
         for info in uploadovaneSlike:
@@ -205,7 +205,7 @@ class MainWindow(QMainWindow):
         if not renderNacin:
             return
 
-        imgControls.ui.graphicsView.spremiUpload(self.zavrsiUpload)
+        imgControls.ui.graphicsView.spremiUpload(renderNacin, self.zavrsiUpload)
 
 
     def zavrsiUpload(self, nacin, dimenzije):

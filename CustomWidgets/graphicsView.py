@@ -103,12 +103,14 @@ class GraphicsView(QGraphicsView):
         pix = QPixmap(r.size())
         p = QPainter(pix)
         self.scene_.render(p, QRectF(pix.rect()), QRectF(r))
-        print(pix)
         return pix
 
-    def spremiUpload(self, callback):
-        self.waitingCallback = callback
-        self.izaberiDimenzije()
+    def spremiUpload(self, nacin, callback):
+        if nacin == self.NacinEnum.custom:
+            self.waitingCallback = callback
+            self.izaberiDimenzije()
+        else:
+            callback(nacin, None)
 
     def uploadSpreman(self, dimenzije):
         self.waitingCallback(self.NacinEnum.custom, dimenzije)
@@ -133,9 +135,7 @@ class GraphicsView(QGraphicsView):
                 self.waitingCallback = None
                 pixmap = self.renderScene(nacin, dimenzije)
         else:
-            print("sta saljem", nacin)
             pixmap = self.renderScene(nacin)
-            print("evo ga", pixmap)
 
         fileName, _ = QFileDialog.getSaveFileName(self, "Sacuvajte fajl")
         if not fileName:

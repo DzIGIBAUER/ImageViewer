@@ -125,7 +125,7 @@ class Ui_imageControls(object):
         self.penColorSelectLabel.setText(_translate("imageControls", "Pen"))
         self.brushColorSelectLabel.setText(_translate("imageControls", "Brush"))
         self.nesto.setText(_translate("imageControls", "Dodati Itemi"))
-from ImageViewerRepo.CustomWidgets.graphicsView import GraphicsView
+from CustomWidgets.graphicsView import GraphicsView
 
 
 if __name__ == "__main__":
