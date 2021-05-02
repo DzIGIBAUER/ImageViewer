@@ -1,8 +1,8 @@
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QFileDialog
-from PyQt6.QtGui import (QResizeEvent, QMouseEvent, QWheelEvent, QPixmap, QColor, QBrush, QImage,
+from PyQt6.QtGui import (QResizeEvent, QMouseEvent, QKeyEvent, QWheelEvent, QPixmap, QColor, QBrush, QImage,
                          QPainter)
 from PyQt6.QtCore import Qt, QRectF, pyqtSignal
-from ImageViewerRepo.CustomWidgets.drawing import Drawing
+from CustomWidgets.drawing import Drawing
 from enum import Enum
 
 class GraphicsView(QGraphicsView):
@@ -35,6 +35,12 @@ class GraphicsView(QGraphicsView):
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+    def keyReleaseEvent(self, event: QKeyEvent):
+        if (event.keyCombination().key() == Qt.Key.Key_Z and
+                event.keyCombination().keyboardModifiers() == Qt.KeyboardModifiers.ControlModifier):
+            function_ = self.drawing.undoList.pop()
+            function_()
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
@@ -97,7 +103,7 @@ class GraphicsView(QGraphicsView):
         pix = QPixmap(r.size())
         p = QPainter(pix)
         self.scene_.render(p, QRectF(pix.rect()), QRectF(r))
-        print(r)
+        print(pix)
         return pix
 
     def spremiUpload(self, callback):
@@ -105,8 +111,7 @@ class GraphicsView(QGraphicsView):
         self.izaberiDimenzije()
 
     def uploadSpreman(self, dimenzije):
-        pix = self.renderScene(self.NacinEnum.custom, dimenzije)
-        self.waitingCallback(pix)
+        self.waitingCallback(self.NacinEnum.custom, dimenzije)
         self.waitingCallback = None
 
     def izaberiDimenzije(self):
@@ -114,8 +119,7 @@ class GraphicsView(QGraphicsView):
 
     ''' ova metoda slusa za zavrsenje biranje dimenzija slike koju treba da renderujemo u renderScene'''
     def dimenzijaIzabrana(self, dimenzije):
-        print("izabrano")
-        self.waitingCallback(self.NacinEnum.custom, dimenzije)
+        self.uploadSpreman(dimenzije)
 
 
     def sacuvajFajl(self, nacin, dimenzije=None):
@@ -123,14 +127,15 @@ class GraphicsView(QGraphicsView):
             if not dimenzije:
                 # ovu funkciju ce pozvati dimenzijaIzabrana kada dobije dimenzije
                 self.waitingCallback = self.sacuvajFajl
-                print(nacin)
                 self.renderScene(nacin)
                 return  # nista ne radi dalje, radi cemo kada dobijemo dimenzije
             else:
                 self.waitingCallback = None
                 pixmap = self.renderScene(nacin, dimenzije)
         else:
+            print("sta saljem", nacin)
             pixmap = self.renderScene(nacin)
+            print("evo ga", pixmap)
 
         fileName, _ = QFileDialog.getSaveFileName(self, "Sacuvajte fajl")
         if not fileName:

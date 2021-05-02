@@ -2,9 +2,9 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QFileDialog, QFrame, QVB
                              QMessageBox)
 from PyQt6.QtGui import QIcon, QFontDatabase, QImageReader, QPixmap
 from PyQt6 import QtCore
-from ImageViewerRepo.UI import mainWindowUI
-from ImageViewerRepo.CustomWidgets import imageControls, saveDialog, uploadDialog, renderNacinDialog
-from ImageViewerRepo import database, uploadImage
+from UI import mainWindowUI
+from CustomWidgets import imageControls, uploadDialog, renderNacinDialog
+import database, uploadImage
 from functools import partial
 from pathlib import Path
 from enum import Enum
@@ -86,6 +86,11 @@ class MainWindow(QMainWindow):
                 self.ui.stackedWidget.setCurrentIndex(0)
 
     def izbrisiUploadovanuSliku(self):
+        mbox = QMessageBox()
+        sig = mbox.question(self, "OzbiljnOoOoO","Da li ste sigurni da želite da obrisete sliku?")
+        if sig is mbox.StandardButtons.No:
+            return
+
         dugme = self.sender()
         id_ = dugme.property("imgID")
         frame = dugme.property("frame")
@@ -94,10 +99,9 @@ class MainWindow(QMainWindow):
             self.dbc.izbrisiUploadovanuSliku(id_)
             frame.layout().removeWidget(frame)
         else:
-            erd = QMessageBox()
-            odg = erd.question(self, "Doslo je do greske", f"Slika nije mogla biti obrisana.\nRazlog: {poruka}\n"
-                                                           + "Da li zelite da je izbrisete iz samo iz aplikacije?")
-            if odg is erd.StandardButtons.Yes:
+            odg = mbox.question(self, "Doslo je do greske", f"Slika nije mogla biti obrisana.\nRazlog: {poruka}\n"
+                                + "Da li zelite da je izbrisete iz samo iz aplikacije?")
+            if odg is mbox.StandardButtons.Yes:
                 self.dbc.izbrisiUploadovanuSliku(id_)
                 frame.layout().removeWidget(frame)
 
@@ -129,7 +133,9 @@ class MainWindow(QMainWindow):
             nemaLabel.setStyleSheet("font-size: 25px;")
             self.ui.frame.layout().addWidget(nemaLabel)
 
-        [self.ui.frame.layout().removeWidget(w) for w in self.ui.frame.layout().children()]
+        for widget in self.ui.frame.children():
+            if type(widget) == QFrame:
+                self.ui.frame.layout().removeWidget(widget)
 
         for info in uploadovaneSlike:
             id_, naslov, opis, deletehash, data = info
@@ -146,6 +152,7 @@ class MainWindow(QMainWindow):
 
             imgL = QLabel("", fr)
             imgL.setPixmap(pix)
+            imgL.setAlignment(QtCore.Qt.Alignment.AlignCenter)
             vly.addWidget(imgL)
             dl = QLabel(f"DeleteHash {deletehash}", fr)
             dl.setTextInteractionFlags(QtCore.Qt.TextInteractionFlags.TextSelectableByMouse)
@@ -160,7 +167,7 @@ class MainWindow(QMainWindow):
             ol.setTextInteractionFlags(QtCore.Qt.TextInteractionFlags.TextSelectableByMouse)
             vly.addWidget(ol)
 
-            izbrisiLabel = QPushButton("X")
+            izbrisiLabel = QPushButton("X", imgL)
             izbrisiLabel.setProperty("imgID", id_)
             izbrisiLabel.setProperty("hash", deletehash)
             izbrisiLabel.setProperty("frame", fr)
@@ -201,9 +208,8 @@ class MainWindow(QMainWindow):
         imgControls.ui.graphicsView.spremiUpload(self.zavrsiUpload)
 
 
-    def zavrsiUpload(self, pix):
-        print(pix)
-        return
+    def zavrsiUpload(self, nacin, dimenzije):
+        pix = self.ui.tabWidget.currentWidget().ui.graphicsView.renderScene(nacin, dimenzije)
         nastavi, naslov, opis = uploadDialog.UploadDialog.uploadFile(self, pix)
 
         if not nastavi:
@@ -229,7 +235,6 @@ class MainWindow(QMainWindow):
         return ba.data()
 
     def pixmapFromBytes(self, data):
-        ba = QtCore.QByteArray(data)
         pixmap = QPixmap()
         ok = pixmap.loadFromData(data)
         assert ok
@@ -237,7 +242,6 @@ class MainWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    print(sys.argv)
 
     # Back up the reference to the exceptionhook
     sys._excepthook = sys.excepthook

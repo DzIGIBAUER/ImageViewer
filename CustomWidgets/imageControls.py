@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QPushButton
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QPropertyAnimation, QParallelAnimationGroup
-from ImageViewerRepo.UI.imageControlsUI import Ui_imageControls
+from UI.imageControlsUI import Ui_imageControls
 
 class ImageControls(QWidget):
     def __init__(self, main, image, *args, **kwargs):

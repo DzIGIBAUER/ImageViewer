@@ -73,7 +73,6 @@ class Drawing:
             item: QGraphicsRectItem = self.group.childItems()[0]
             x, y = item.pos().x(), item.pos().y()
             w, h = abs(pos.x() - x), abs(pos.y() - y)
-            print("SV", x, y, w, h, pos)
             item.setRect(0, 0, w, h)
 
         def end(self):
@@ -84,14 +83,12 @@ class Drawing:
             br = itm.boundingRect().size()
 
             r = QRectF(itm.x(), itm.y(), br.width(), br.height())
-            print(self.group.childItems(), r)
             self.signal.emit(r)
             [self.group.removeFromGroup(item) for item in self.group.childItems()]
 
         def konstruisiRect(self, pos):
             item = QGraphicsRectItem(0, 0, 0, 0)
             item.setPos(pos)
-            print(pos)
             self.group.addToGroup(item)
 
     class Image(Item):
@@ -196,6 +193,8 @@ class Drawing:
         self.brush = QBrush(QColor("black"))
         self.debljinaLinije = 1
 
+        self.undoList = []
+
         self.method = None  # ima metode potrebe za crtanje
         self.active = False
 
@@ -229,6 +228,7 @@ class Drawing:
             item = self.method.end()
             if item:
                 self.scene.addItem(item)
+                self.undoList.append(lambda: self.scene.removeItem(item))
             self.method = None
 
     def namestiDebljinuLinije(self, debljina):

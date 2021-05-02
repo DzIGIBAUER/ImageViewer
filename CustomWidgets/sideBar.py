@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QFrame
 from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
-from ImageViewerRepo.CustomWidgets.sideBarButton import SideBarButton
+from CustomWidgets.sideBarButton import SideBarButton
 
 class SideBar(QFrame):
     def __init__(self, *args, **kwargs):
