@@ -1,3 +1,6 @@
+Ovo je bio zbrzan projekat za [takmičenje](https://dzimiks.com/contests/first-to-the-moon-2021).
+Repo je arhiviran, a nova verzija projekta je [ovde](https://github.com/DzIGIBAUER/ImageManager)
+
 ## STA RADI OVA APLIKACIJA
 
 mozete da pregledata, editujete *(donekle)*, cuvate i upload-ujete slike na [Imgur](https://www.imgur.com).
